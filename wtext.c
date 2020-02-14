@@ -57,8 +57,8 @@ void wtext_draw(TObjectUI *o, int x, int y)
 
     for(i=0;t->buffer[i];i++) {
 	if(t->csr==i) {
-		t->cx=c;
-		t->cy=l;
+//		t->cx=c;
+//		t->cy=l;
 	}
 
 	if( t->buffer[i]=='\n' ) {
@@ -78,10 +78,10 @@ void wtext_draw(TObjectUI *o, int x, int y)
 		c++;
 	}
 
-	if( t->cx >= t->sc && t->cx< t->nc+t->sc && t->cy >= t->sl &&  t->cy < t->nl+t->sl ) {
-		tx = x1+(t->cy-t->sl)*gx->textheight("²")+5;
-		ty = y1+(t->cx-t->sc)*gx->textwidth("Í")+5;
-		gx->rectangle(tx, ty, tx+gx->textwidth("Í"), ty+gx->textwidth("Í"));
+	if ( t->cx >= 0 && t->cx < t->nc && t->cy >= 0 &&  t->cy < t->nl ) {
+		tx = x1+(t->cx)*gx->textwidth("²")+5;
+		ty = y1+(t->cy)*gx->textheight("Í")+5;
+		gx->rectangle(tx, ty, tx+gx->textwidth("Í"), ty+gx->textheight("Í"));
 
 	}
     }
@@ -97,25 +97,41 @@ int wtext_proc(TObjectUI *o, TEvent *ev)
 		switch(ev->key)
 		{
 			case 0x014B:
-				if(t->sc>0) {
+				if (t->cx>0) {
+					t->cx--;
+					o->flags |= WREDRAW;
+				}
+				else if (t->sc>0) {
 					t->sc--;
 					o->flags |= WREDRAW;
 				}
 			break;
 			case 0x014D:
-				if(t->sc<t->tc-1) {
+				if (t->cx < t->nc-1) {
+					t->cx++;
+					o->flags |= WREDRAW;
+				}
+				else if (t->sc<t->tc-1) {
 					t->sc++;
 					o->flags |= WREDRAW;
 				}
 			break;
 			case 0x0148:
-				if(t->sl>0) {
+				if (t->cy>0) {
+					t->cy--;
+					o->flags |= WREDRAW;
+				}
+				else if (t->sl>0) {
 					t->sl--;
 					o->flags |= WREDRAW;
 				}
 			break;
 			case 0x0150:
-				if(t->sl<t->tl-1) {
+				if (t->cy < t->nl-1) {
+					t->cy++;
+					o->flags |= WREDRAW;
+				}
+				else if (t->sl<t->tl-1) {
 					t->sl++;
 					o->flags |= WREDRAW;
 				}
@@ -146,8 +162,8 @@ TObjectUI *gxCreateTextUI(
 	t->buffer[MAXTEXT]='\0';
 	printf("%s\n", t->buffer);
 	counttextcl(t->buffer,&t->tc,&t->tl);
-	t->nc=(w-10)/gx->textwidth("Í");
-	t->nl=(h-10)/gx->textheight("²");
+	t->nc=(w-10)/gx->textwidth("W");
+	t->nl=(h-10)/gx->textheight("W");
 	t->csr=0;
 	t->cx=0;
 	t->cy=0;

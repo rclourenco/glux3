@@ -12,7 +12,7 @@ int initgraphics(char *mode, char *opt)
 {
 	#ifdef USE_SDL
 	if(!strcmp(mode, "DEFAULT")) {
-		int r = init_sdldriver(800,600);
+		int r = init_sdldriver(640,480);
 		if (r) {
 			gx=&sdldriver;
 		}
@@ -35,8 +35,9 @@ int gxGetch()
 		} while(gxev.type!=gxev_key);
 		haskey = gxev.e.key;
 	}
-	if (haskey>0 && haskey>256) {
+	if (haskey>=256) {
 		haskey = haskey & 0xFF;
+		printf("KEY: %d\n", haskey);
 		return 0;
 	}
 	int t = haskey;

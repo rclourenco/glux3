@@ -1,15 +1,9 @@
-/*
-	Biblioteca programada por Renato Louren‡o.
-*/
-//biblioteca para o modo grafico 13h
-
 #include <stdlib.h>
 #include <strings.h>
 #include <SDL2/SDL.h>
 #include "picture.h"
 #include "vgafonts.h"
 
-//defini‡äes de desenho
 #define LIFI 0
 #define LINE 1
 #define FILL 2
@@ -39,6 +33,9 @@ unsigned char TextBackGround=255;
 unsigned char *dscreen=NULL;
 unsigned char *screen=NULL;
 
+unsigned int line_width=0;
+unsigned int line_pattern=0;
+
 GraphPicture *use_icon=NULL;
 
 //instrucoes graficas de interface com a bios
@@ -58,10 +55,11 @@ void GetDacRegs(unsigned a,unsigned char *r,unsigned char *g,unsigned char *b);
 void DrawPixel(int x,int y,char c);
 void DrawRect(int x1,int y1,int x2,int y2,char op);
 //void DrawCircle(int x,int y,int r,char op);
-//void DrawLine(int x1,int y1,int x2,int y2);
-#define DrawLine dline
+void DrawLine(int x1,int y1,int x2,int y2);
 
 void dline(int x1, int y1, int x2, int y2);
+void dline2(int x1, int y1, int x2, int y2);
+
 void dcircle(int x0, int y0, int r);
 
 //instru‡äes para manipula‡Æo de bitmaps
@@ -95,6 +93,9 @@ struct {
 	SDL_Renderer *renderer;
 	SDL_Texture  *screenx;
 	SDL_PixelFormat *pixelFormat;
+	float wratio;
+	float hratio;
+	Uint32 windowID;
 } GraphSystem = {NULL, NULL, NULL, NULL};
 
 char *window_name = "Untitled";
@@ -121,12 +122,16 @@ int set_graph_mode(int w, int h)
 
     int posX = -1, posY = -1, width = 800, height = 600;
 
+    GraphSystem.wratio = (float)SCREEN_W/width;
+    GraphSystem.hratio = (float)SCREEN_H/height;
+
     SDL_Init(SDL_INIT_VIDEO);
 
     GraphSystem.win         = SDL_CreateWindow(window_name, posX, posY, width, height,SDL_WINDOW_RESIZABLE );
     GraphSystem.renderer    = SDL_CreateRenderer(GraphSystem.win, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
     GraphSystem.screenx     = SDL_CreateTexture(GraphSystem.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
     GraphSystem.pixelFormat = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+    GraphSystem.windowID    = SDL_GetWindowID(GraphSystem.win);
 
 	if (use_icon!=NULL) {
 		SDL_Surface *surface = NULL;
@@ -290,16 +295,12 @@ void DrawRect(int x1,int y1,int x2,int y2,char op)
 		cor=FillColor;
 	else
 		cor=Color;
-	for(x=x1;x<=x2;x++)
-	{
-		DrawPixel(x,y1,cor);
-		DrawPixel(x,y2,cor);
-	}
-	for(y=y1+1;y<y2;y++)
-	{
-		DrawPixel(x1,y,cor);
-		DrawPixel(x2,y,cor);
-	}
+
+	DrawLine(x1,y1,x2,y1);
+	DrawLine(x1,y2,x2,y2);
+
+	DrawLine(x1,y1+1,x1,y2);
+	DrawLine(x2,y1+1,x2,y2);
 }
 
 void FillArea(int x1,int y1,int x2,int y2,char cor)
@@ -366,9 +367,12 @@ void DrawCircle(int x,int y,int r,char op)
 }
 */
 
+
+
+
 void DrawPixel(int x,int y,char c)
 {
-	if ((x>=0)&&(y>=0)&&(x<320)&&(y<200))
+	if ((x>=0)&&(y>=0)&&(x<SCREEN_W)&&(y<SCREEN_H))
 	{
 		switch (DRAW)
 		{
@@ -382,6 +386,35 @@ void DrawPixel(int x,int y,char c)
 
 }
 
+void DrawArc(int x,int y, int s, int e, int r)
+{
+	int c1,c2;
+	int r2=r-1;
+	double alfa;
+	double inca;
+	double sangle = (s*PI)/180.0;
+	double eangle = (e*PI)/180.0;
+	int px,py;
+	char cor;
+
+	if (eangle < sangle)
+		eangle += 2*PI;
+
+	if ((r==0)||(r>180))
+	{
+		DrawPixel(x,y,Color);
+		return;
+	}
+	inca=PI/(PI*r);
+
+	cor=Color;
+	for(alfa=sangle;alfa<=eangle;alfa+=inca)
+	{
+		px=cos(alfa)*r;
+		py=sin(alfa)*r;
+		DrawPixel(x+px,y-py,cor);
+	}
+}
 
 void dline(int x1, int y1, int x2, int y2)
 {
@@ -403,7 +436,7 @@ void dline(int x1, int y1, int x2, int y2)
 		d=ay-ax/2;
 		while(1)
 		{
-			PLOT(x,y,Color);
+			DrawPixel(x,y,Color);
 			if(x==x2) break;
 			if(d>=0) {
 				y=y+sy;
@@ -417,7 +450,7 @@ void dline(int x1, int y1, int x2, int y2)
 		d=ax-ay/2;
 		while(1)
 		{
-			PLOT(x,y,Color);
+			DrawPixel(x,y,Color);
 			if(y==y2) break;
 			if(d>=0) {
 				x=x+sx;
@@ -429,6 +462,67 @@ void dline(int x1, int y1, int x2, int y2)
 	}
 
 }
+
+void dline2(int x1, int y1, int x2, int y2)
+{
+	int dx,dy,d,y,x;
+	int ax,ay;
+	int sx,sy;
+
+	dx = x2-x1;
+	dy = y2-y1;
+
+	sx = (x2<x1?-1:1);
+	sy = (y2<y1?-1:1);
+	ax = 2*(dx<0?-dx:dx);
+	ay = 2*(dy<0?-dy:dy);
+
+	x=x1;
+	y=y1;
+	if( ax >= ay ) {
+		d=ay-ax/2;
+		while(1)
+		{
+			if (!line_pattern || (line_pattern >> (x&0xF))&1) {
+				DrawPixel(x,y,Color);
+
+				if (line_width==3) {
+					DrawPixel(x,y-1,Color);
+					DrawPixel(x,y+1,Color);
+				}
+			}
+			if(x==x2) break;
+			if(d>=0) {
+				y=y+sy;
+				d=d-ax;
+			}
+			d=d+ay;
+			x=x+sx;
+		}
+	}
+	else {
+		d=ax-ay/2;
+		while(1)
+		{
+			if (!line_pattern || (line_pattern >> (y&0xF))&1) {
+				DrawPixel(x,y,Color);
+				if (line_width==3) {
+					DrawPixel(x-1,y,Color);
+					DrawPixel(x+1,y,Color);
+				}
+			}
+			if(y==y2) break;
+			if(d>=0) {
+				x=x+sx;
+				d=d-ay;
+			}
+			d=d+ax;
+			y=y+sy;
+		}
+	}
+
+}
+
 
 void dcircle(int x0, int y0, int r)
 {
@@ -486,6 +580,15 @@ void DrawLineX(int x1,int y1,int x2,int y2)
 	DrawPixel(x2,y2,Color);
 }
 */
+
+void DrawLine(int x1,int y1,int x2,int y2)
+{
+	if (line_pattern==0 && line_width==0)
+		dline(x1,y1,x2,y2);
+	else 
+		dline2(x1,y1,x2,y2);
+}
+
 
 unsigned PicSize(int x1,int y1,int x2,int y2)
 {

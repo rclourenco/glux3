@@ -6,10 +6,10 @@
 #define DEFAULT_FONT 0
 #define TRIPLEX_FONT 0
 #define HORIZ_DIR 0
-#define XOR_PUT 0
+#define XOR_PUT 1
 #define COPY_PUT 0
-#define DOTTED_LINE 0
-#define THICK_WIDTH 0
+#define DOTTED_LINE 1
+#define THICK_WIDTH 3
 #define SOLID_LINE 0
 #define CLOSE_DOT_FILL 0
 

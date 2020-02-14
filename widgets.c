@@ -23,37 +23,6 @@ TButtonUI uiButtons[]={
     {0}
 };
 
-TButtonUI uiButtonsScreenPos[]={
-/*    {w:30,   caption:">",   action: "dir1"},
-    {w:30,  caption: "<",   action: "dir2"},
-    {w:30,  caption: "/\\", action: "dir3"},
-    {w:30,  caption: "\\/", action: "dir4"},
-    {w:30, caption: "H+",   action: "hplus"},
-    {w:30, caption: "H-",   action: "hminus"},
-    {w:30, caption: "V+",   action: "vplus"},
-    {w:30, caption: "V-",   action: "vminus"},}*/
-    {0}
-};
-
-
-
-TOverlayButtonUI uiOverlayButtons[]={
-/*    {caption: "Abrir",             action: "load"},
-    {caption: "Exportar Imagem",   action: "saveimg"},
-    {caption: "Exportar Texto",    action: "savetxt"},
-    {caption: "É deterministico?", action: "op1"},
-    {caption: "Forma Canonica",    action: "op2"},
-    {caption: "Calcular Paralelo", action: "op3"},
-    {caption: "Propriedades",      action: "op4"},
-    {caption: "Info",              action: "info"},
-    {caption: "Ajuda",             action: "help"},
-    {caption: "About",             action: "about"},
-    {caption: "Sair",              action: "exit"},
-    {caption: NULL,       action: NULL},
-    */
-    {0,0,0,0,0,NULL,NULL}
-};
-
 float
     ovx1=100,
     ovy1=100,
@@ -626,16 +595,6 @@ int scroll_proc(TObjectUI *o, TEvent *ev)
 void displayBackground()
 {
     gx->cleardevice();
-    //setcolor(2);
-    //rectangle(xmin,ymin,xmax,ymax);
-   /* al_draw_line(1,25,program.winwidth-1,25, al_color_name("green"),2);
-    al_draw_line(1,55,program.winwidth-1,55, al_color_name("green"),2);
-    al_draw_textf(program.font, al_color_name("white"), program.winwidth/2, 5,ALLEGRO_ALIGN_CENTRE, "%s", "Automatonic (R)");
-    */
-//    uiButtonDrawRow(uiButtons);
-//    uiButtonDrawRow(uiButtonsScreenPos);
-//    uiDrawScrollBar(&hsb);
-//    uiDrawScrollBar(&vsb);
 }
 
 
@@ -1078,6 +1037,7 @@ void gxProcessWindowsEvents(TObjectUI *o, TEvent *ev)
 		gx->setwritemode(COPY_PUT);
 		gx->mouse_show();
 		dl->lset=0;
+		gx->refresh();
 	}
 	if(set) {
 		dl->drx=sx;
@@ -1095,6 +1055,7 @@ void gxProcessWindowsEvents(TObjectUI *o, TEvent *ev)
 		gx->setlinestyle(SOLID_LINE,1,1);
 		gx->mouse_show();
 		dl->lset=1;
+		gx->refresh();
 	}
 	ev->type=0;
 }

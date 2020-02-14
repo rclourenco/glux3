@@ -170,12 +170,10 @@ int main()
    int mcv=(10-1)*miv;
 
    load_disclaimers("contents.txt");
-   //initgraphics("BGI_AUTO", "c:\\devtools\\tc\\bgi");
+   
    if(!initgraphics("DEFAULT", "")) {
    	return -1;
    }
-
-   gxGetch();
 
    for(i=0;i<10;i++) {
 	gx->setcolor(ctab[i]);
@@ -193,15 +191,12 @@ int main()
    }
 
    gx->settextstyle(DEFAULT_FONT,HORIZ_DIR,0);
-   printf("Before Delay\n");
-   gx->delay(10);
-   printf("After Delay\n");
+   gx->delay(1000);
    uiButtonInitRow(uiButtons, 10,40,20,10);
    container=cvtButtons();
    vsb=gxCreateScrollUI(container,502,100,20,300,0,0,100,50);
    hsb=gxCreateScrollUI(container,100,400,400,20,1,0,5,2);
    gxCreateTextUI(container,100,100,300,200,lines);
-   printf("Before Run\n");
    gxRun(container);
    gx->cleardevice();
    printlines(50,150,dptr[6]);
